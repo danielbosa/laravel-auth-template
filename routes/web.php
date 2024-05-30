@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 
+//Middlware controlla se l'utente è autenticato e verificato; se sì, allora le rotte vengono eseguite; se no entra in gioco la rotta di fallback che rimanda alla dashboard: ma se non è autenticato, allora viene rimandato alla login (e questo è definito in app/Http/Middleware/Authenticate.php)
 Route::middleware(['auth', 'verified'])->name('admin.')->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     //Route::resource('comics', ComicController::class);
