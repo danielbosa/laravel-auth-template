@@ -207,12 +207,18 @@ Route::fallback(function() {
 #lanciare comando
 php artisan storage:link
 
-#salvare
+#salvare (sarò nel metodo Store del Controller, in cui devo importare Storage)
+use Illuminate\Support\Facades\Storage;
+
+#in questo modo salvo nella cartella storage/app/public/nomecartella*
 Storage::put('nomecartella', $data['image']); //ritorna il path
 #or
 $path = Storage::putFileAs(
     'avatars', $request->file('avatar'), $name
 );
+
+#*se voglio salvare il file in un disco diverso da quello di default, allora scrivo
+$path = Storage::disk('nome')->put('uploads', $data['image']);
 
 #per visualizzare 
 <img src="{{ asset('storage/' . $post->cover_image) }}">
@@ -232,17 +238,18 @@ Schema::table('posts', function (Blueprint $table) {
         ->references('id')
         ->on('users')->cascadeOnDelete();
 });
-# shortcut
-	
-$table->foreignId('user_id')->constrained()->cascadeOnDelete();
+# shortcut (se rispetto il naming di Laravel!)
+    # $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
 #down
-
+#prima cancello relazione; solo dopo posso cancellare colonna
 $table->dropForeign('posts_user_id_foreign');
 $table->dropColumn('user_id');
 
 #nei model
-#editare i model con relazioni e fillable o guarded
+#editare i model con le funzioni - relazioni
+#editare fillable o guarded
+#importo l'altro model oggetto della relazione
 #use Illuminate\Database\Eloquent\Relations\HasMany;
 
 protected $guarded = [];
