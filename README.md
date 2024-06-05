@@ -16,7 +16,7 @@ cd your parent_folder_path
 laravel new your_project_name_here
 
 #per versione 9
-composer create-project --prefer-dist laravel/laravel:^9.2 your_project_name_here
+composer create-project --prefer-dist laravel/laravel:^10.0 your_project_name_here
 
 cd your_project_name_here
 
@@ -34,15 +34,13 @@ npm remove postcss
 #installo dbal per migration e seeder
 composer require doctrine/dbal
 
-composer require guzzlehttp/guzzle
-
 composer require laravel/breeze --dev
 php artisan breeze:install #blade
 
 
 composer require pacificdev/laravel_9_preset
 
-#solo per versione 9
+#solo fino a versione 10
 php artisan preset:ui bootstrap --auth
 
 npm install bootstrap axios @fortawesome/fontawesome-free sass
@@ -70,9 +68,7 @@ $fa-font-path: "../fonts/webfonts" !default;
 
 @import '~bootstrap/scss/bootstrap';
 
-h1 {
-    color: $text-color;
-}
+
 
 #vite.config.js
 import { defineConfig } from "vite";
@@ -90,10 +86,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
-            "~@fortawesome": path.resolve(
-                __dirname,
-                "node_modules/@fortawesome"
-            ),
+            "~@fortawesome": path.resolve(__dirname, "node_modules/@fortawesome"),
             "~resources": "/resources/",
         },
     },
@@ -104,6 +97,7 @@ export default defineConfig({
 #volendo personalizzo paginazione e pagine di errore
 php artisan vendor:publish --tag=laravel-errors
 php artisan vendor:publish --tag=laravel-pagination
+php artisan lang:publish
 
 #comandi git
 
@@ -202,23 +196,61 @@ Route::fallback(function() {
 });
 
 ```
-## File Storage
-```bash
-#modifico in env file system 
-es. FILESYSTEM_DISK=public
+## Fileupload - File Storage
 
+```bash
 #In config/filestystems.php 
 #Caricheremo i nostri file nella cartella storage/app/public
-# modifichiamo quindi 
+# modifichiamo quindi e volendo anche env file modifica chiave FILESYSTEM_DRIVER=public
 'default' => env('FILESYSTEM_DRIVER', 'public'),
 
 #lanciare comando
 php artisan storage:link
 
 #salvare
-Storage::put('images', $data['image']); //ritorna il path
+Storage::put('nomecartella', $data['image']); //ritorna il path
+#or
+$path = Storage::putFileAs(
+    'avatars', $request->file('avatar'), $name
+);
 
 #per visualizzare 
 <img src="{{ asset('storage/' . $post->cover_image) }}">
+....
+
+
+```
+## Relazioni
+```bash
+#migration di esempio 
+
+#up
+Schema::table('posts', function (Blueprint $table) {
+
+    $table->unsignedBigInteger('user_id');
+    $table->foreign('user_id')
+        ->references('id')
+        ->on('users')->cascadeOnDelete();
+});
+# shortcut
+	
+$table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+#down
+
+$table->dropForeign('posts_user_id_foreign');
+$table->dropColumn('user_id');
+
+#nei model
+#editare i model con relazioni e fillable o guarded
+#use Illuminate\Database\Eloquent\Relations\HasMany;
+
+protected $guarded = [];
+
+public function products():HasMany
+{
+   return $this->hasMany(Product::class);
+}
+
 
 ```
